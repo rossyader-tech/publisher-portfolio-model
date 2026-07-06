@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Publisher Portfolio — Promotion Leaderboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E1A24; --panel:#142430; --panel2:#1B2E3A; --line:#273D4A;
+    --ink:#EAF1F4; --muted:#8AA0AD; --signal:#45C4B0; --signal-dim:#2C7E72;
+    --cite:#F2B441; --low:#E2685B; --amber:#E0A23C; --purple:#C58BE0;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --body:'Inter',system-ui,sans-serif; --disp:'Space Grotesk',var(--body);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5}
+  .wrap{max-width:1120px;margin:0 auto;padding:32px 20px 96px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--signal);margin:0 0 14px}
+  h1{font-family:var(--disp);font-weight:600;font-size:clamp(27px,4.6vw,42px);line-height:1.08;letter-spacing:-.02em;margin:0 0 14px;max-width:24ch}
+  h1 em{font-style:normal;color:var(--cite)}
+  .lede{font-size:16px;color:var(--muted);max-width:70ch;margin:0 0 20px}
+
+  .toolbar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:0 0 26px}
+  .toggle{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .toggle button{font-family:var(--disp);font-weight:600;font-size:13px;padding:9px 16px;background:var(--panel);color:var(--muted);border:none;cursor:pointer}
+  .toggle button.on{background:var(--signal);color:#06231E}
+  .toolbar .tag{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;margin:0 0 20px}
+  .card h2{font-family:var(--disp);font-weight:600;font-size:17px;margin:0 0 4px}
+  .card .sub{font-size:13px;color:var(--muted);margin:0 0 18px}
+  .lb-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px}
+
+  .lb-row{display:grid;grid-template-columns:34px 1fr auto;gap:14px;align-items:start;padding:16px 0;border-top:1px solid var(--line)}
+  .lb-row:first-of-type{border-top:none}
+  .rank{font-family:var(--disp);font-weight:700;font-size:20px;color:var(--muted);text-align:center;padding-top:2px}
+  .rank.top3{color:var(--cite)}
+  .pub-name{font-family:var(--disp);font-weight:600;font-size:15px}
+  .pub-meta{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin:2px 0 0}
+  .why{font-size:12.5px;color:#C6D3DB;margin:9px 0 0}
+  .why b{color:var(--ink);font-weight:600}
+  .opp{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:5px;border:1px solid var(--line);margin-left:8px}
+  .opp.volume{color:var(--signal);border-color:var(--signal-dim)}
+  .opp.quality{color:var(--amber);border-color:#6b541d}
+  .levers{display:flex;flex-wrap:wrap;gap:6px;margin:11px 0 0}
+  .lever{font-size:12px;padding:4px 9px;border-radius:7px;background:var(--panel2);border:1px solid var(--line);color:var(--ink)}
+  .lever .eff{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;margin-left:6px;color:var(--muted)}
+  .lever .eff.lo{color:var(--signal)} .lever .eff.hi{color:var(--low)}
+  .lever.margin{border-color:#6b541d}
+  .lever.rel{border-color:#4a2f5a;color:var(--purple)}
+  .score-box{text-align:right;min-width:96px}
+  .score-num{font-family:var(--disp);font-weight:700;font-size:30px;line-height:1;color:var(--signal)}
+  .score-num.mid{color:var(--amber)}
+  .score-cap{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:2px 0 8px}
+  .score-adj{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin:0 0 7px}
+  .score-adj .up{color:var(--signal)} .score-adj .down{color:var(--low)}
+  select.eng{background:var(--panel2);border:1px solid var(--line);border-radius:7px;color:var(--ink);font-family:var(--mono);font-size:11px;padding:5px 7px;width:100%}
+
+  .quad-wrap{display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start}
+  @media (max-width:820px){.quad-wrap{grid-template-columns:1fr}}
+  svg{width:100%;height:auto;display:block}
+  .quad-legend .qbox{padding:11px 13px;border:1px solid var(--line);border-radius:9px;margin:0 0 9px;font-size:12.5px}
+  .quad-legend .qbox b{font-family:var(--disp);display:block;margin:0 0 2px;font-size:13px}
+  .quad-legend .qbox.q1{border-color:var(--signal-dim)} .quad-legend .qbox.q2{border-color:#6b541d}
+  .quad-legend .qbox.q3{border-color:#3a5a8a} .quad-legend .qbox.q4{border-color:var(--line)}
+  .qk{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+  .fp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .fp{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:11px 13px}
+  .fp .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .fp .v{font-size:13.5px;font-weight:600;margin:3px 0 0}
+
+  .roll{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media (max-width:640px){.roll{grid-template-columns:1fr 1fr}}
+  .stat{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .stat .n{font-family:var(--disp);font-weight:700;font-size:24px;color:var(--signal)}
+  .stat .l{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:4px 0 0}
+  .barrow{display:flex;align-items:center;gap:10px;margin:9px 0 0;font-size:12.5px}
+  .barrow .lab{width:80px;color:var(--muted);font-family:var(--mono);font-size:11px}
+  .barrow .track{flex:1;height:12px;background:var(--panel2);border-radius:3px;overflow:hidden}
+  .barrow .fill{height:100%;border-radius:3px}
+  .note{font-size:12px;color:var(--muted)}
+  .disclaimer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);margin-top:8px;padding-top:16px;line-height:1.55}
+  .lb-row{cursor:pointer}
+  .lb-row:hover{background:rgba(69,196,176,0.04)}
+  .pub-name .view{font-family:var(--mono);font-size:10px;color:var(--muted);margin-left:8px;font-weight:400}
+  .lb-row:hover .pub-name .view{color:var(--signal)}
+  .modal-back{position:fixed;inset:0;background:rgba(6,15,22,0.78);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:50;overflow-y:auto}
+  .modal-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;max-width:640px;width:100%;padding:24px}
+  .modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin:0 0 4px}
+  .modal-title{font-family:var(--disp);font-weight:600;font-size:22px;line-height:1.1}
+  .modal-title a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--signal-dim)}
+  .modal-sub{font-family:var(--mono);font-size:12px;color:var(--muted);margin:4px 0 0}
+  .modal-x{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer;flex-shrink:0}
+  .modal-x:hover{color:var(--ink)}
+  .modal-score{text-align:right;flex-shrink:0}
+  .modal-score .n{font-family:var(--disp);font-weight:700;font-size:32px;color:var(--signal);line-height:1}
+  .modal-score .n.mid{color:var(--amber)}
+  .modal-score .c{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .msec{border-top:1px solid var(--line);margin-top:18px;padding-top:16px}
+  .msec h4{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--signal);margin:0 0 12px}
+  .mstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media (max-width:520px){.mstats{grid-template-columns:1fr 1fr}}
+  .mstat{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:11px 12px}
+  .mstat .v{font-family:var(--disp);font-weight:600;font-size:17px}
+  .mstat .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:3px 0 0}
+  .mrow{display:flex;justify-content:space-between;gap:12px;padding:7px 0;font-size:13px;border-bottom:1px solid rgba(39,61,74,0.5)}
+  .mrow:last-child{border-bottom:none}
+  .mrow .k{color:var(--muted)} .mrow .val{color:var(--ink);font-weight:500;text-align:right}
+  .mrow .val a{color:var(--signal);text-decoration:none}
+  .whybar{display:flex;gap:8px;margin:0 0 10px}
+  .whypill{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 10px;text-align:center}
+  .whypill .v{font-family:var(--disp);font-weight:700;font-size:18px;color:var(--signal)}
+  .whypill .k{font-family:var(--mono);font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:2px 0 0}
+  .method{border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:0 0 20px;font-size:13.5px;color:#C6D3DB;line-height:1.6}
+  .method h3{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--signal);margin:0 0 8px;font-weight:400}
+  .method b{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Fintech Publisher Portfolio · Funded-Account Growth</p>
+  <h1>Which mid-tier publishers can become <em>top-tier</em> — and what to pull to get them there?</h1>
+  <p class="lede">Established fintech affiliate programs grow by getting more funded accounts — and better ones — from the publishers they already have. This models a large portfolio, scores every mid-tier publisher on how likely they are to reach top-tier by how closely they match your best publishers' profile and how much headroom they have, and names the levers to pull. Built around funded-account economics: you pay a CPA per funded account, so the game is first-year revenue per account and ROI, not just sign-ups. Demo data; in production it connects to your affiliate platform, funding/retention data, and third-party sources.</p>
+
+  <div class="toolbar">
+    <span class="tag">Funded-account model · demo data — illustrative publishers, not live.</span>
+  </div>
+
+  <div class="method">
+    <h3>How the scoring works</h3>
+    Every publisher sits on two axes: <b>funding quality</b> (do their accounts fund, deposit, and retain) and <b>scale</b> (volume). Top-tier publishers are strong on both; the promotion opportunities are the mid-tier publishers strong on <b>one</b> axis with room on the other. Each mid-tier publisher gets a <b>promotion score</b> from how closely they match your top-tier fingerprint — channel, publisher type, audience, geo — and how much headroom they have, with scale and quality weighted <b>evenly</b>, so a big publisher with fixable quality ranks alongside a high-quality one that just needs volume. Because this is a <b>funded-account model</b>, quality drives first-year revenue per account and ROI — so lifting quality on a high-volume publisher and scaling a high-quality one are both real ways to grow the program. Your engagement read nudges the score ±7%; the levers on each row follow the diagnosis.
+  </div>
+
+  <!-- PORTFOLIO -->
+  <div class="card">
+    <h2>Portfolio roll-up</h2>
+    <div class="sub">The shape of the portfolio at a glance — scale, blended ROI, and how many promotion candidates are in play — before diving into who to work.</div>
+    <div class="roll" id="roll"></div>
+    <div id="tierbars" style="margin-top:16px"></div>
+    <p class="note" id="concentration" style="margin-top:14px"></p>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="card">
+    <div class="lb-head">
+      <div>
+        <h2>Promotion leaderboard</h2>
+        <div class="sub">Mid-tier publishers ranked by promotion score (1–100). Set engagement per row — an engaged counterpart shifts the score ±7% and re-ranks live.</div>
+      </div>
+      <div class="toggle" id="focusToggle">
+        <button data-n="20" class="on">Focus 20</button>
+        <button data-n="50">Pipeline 50</button>
+      </div>
+    </div>
+    <div id="leaderboard"></div>
+  </div>
+
+  <!-- QUADRANT -->
+  <div class="card">
+    <h2>Quality × Scale</h2>
+    <div class="sub">Every publisher in the portfolio. Top-tier sits high on both; the mid-tier promotion opportunities are strong on one axis with room on the other. Quality here is back-end funding quality — do their accounts actually fund, deposit, and retain.</div>
+    <div class="quad-wrap">
+      <div id="quadrant"></div>
+      <div class="quad-legend">
+        <div class="qbox q1"><b>Top tier</b><span class="qk">High funding quality + high scale. Protect & deepen.</span></div>
+        <div class="qbox q2"><b>High scale, low quality</b><span class="qk">Lever: sub-ID optimization, re-pricing, funnel/creative swap.</span></div>
+        <div class="qbox q3"><b>High quality, low scale</b><span class="qk">Lever: volume activation — bonuses, CPA lift, co-marketing.</span></div>
+        <div class="qbox q4"><b>Low / low</b><span class="qk">Maintain or trim.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINGERPRINT -->
+  <div class="card">
+    <h2>Top-tier fingerprint</h2>
+    <div class="sub">The shared profile of your best publishers — what the promotion score matches mid-tier publishers against.</div>
+    <div class="fp-grid" id="fingerprint"></div>
+  </div>
+
+  <p class="disclaimer">Funding quality stands in for whether a publisher's accounts fund, deposit, and retain — the driver of 1st-year revenue and ROI. This tool points to where to invest and which levers to test; sizing the test, the investment, and the measured lift is the job of a separate testing tool. Demo publishers are generated and illustrative — not real program participants.</p>
+</div>
+
+<div id="modal" class="modal-back" style="display:none"><div class="modal-card" id="modalCard"></div></div>
+
+<script>
+// ---------- deterministic large-portfolio generator ----------
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const NAMES={
+  smb:{seed:1337,
+    pre:["SaaS","Stack","Tool","App","Biz","Work","Launch","Cloud","Ops","Team","Founder","SMB","Startup","Growth","Nimble","Bright","Peak","Prime","Core","Swift"],
+    suf:["Review","Guide","Hub","Report","Weekly","Digest","Compare","Finder","HQ","Pro","Insider","Wire","Desk","List","Lab","Central","Nerd","Genius","Advisor","Base"],
+    premium:["Review site","Comparison site","Newsletter"],
+    broad:["YouTube/creator","Content/SEO blog","Coupon/deal","Social/influencer"]},
+  fin:{seed:2718,
+    pre:["Credit","Money","Wealth","Card","Budget","Finance","Invest","Cash","Fund","Save","Fin","Bank","Rewards","Score","Coin","Capital","Ledger","Nest","Vault","Yield"],
+    suf:["Wise","Wire","Guide","Report","Radar","Compare","HQ","Pro","Daily","Monitor","Tracker","Hub","Advisor","Insider","Lab","Desk","Genius","Nerd","Central","App"],
+    premium:["Financial-monitoring site","Comparison site","Newsletter","Mobile app"],
+    broad:["YouTube/creator","Content/SEO blog","Coupon/deal"]}
+};
+function chanOf(t){ if(t==="Newsletter")return "Email"; if(t==="YouTube/creator"||t==="Social/influencer")return "Social"; if(t==="Mobile app")return "App"; return "Content/SEO"; }
+const CONTACT_FIRST=["Sarah","Mike","Priya","Jordan","Alex","Dana","Chris","Nina","Omar","Rachel","Tom","Lena","Sam","Maya","Ben","Zoe","Kara","Devin"];
+const CONTACT_LAST=["Chen","Patel","Reyes","Kim","Nguyen","Brooks","Silva","Walsh","Owens","Frost","Hale","Diaz","Cole","Park","Shah","Ford","Ellis","Mercer"];
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+
+function genPortfolio(skin){
+  const cfg=NAMES[skin]; const rng=mulberry32(cfg.seed);
+  const N=300, TOP=25, MID=125, TOTAL=3000000;
+  // 1. long-tail click values (top 25 of the array hold ~70%)
+  const w=[];
+  for(let i=1;i<=TOP;i++) w.push({v:1/Math.pow(i,0.7),g:"t"});
+  for(let j=TOP+1;j<=N;j++) w.push({v:1/Math.pow(j-TOP+1,0.95),g:"r"});
+  const sumT=w.filter(x=>x.g==="t").reduce((a,b)=>a+b.v,0), sumR=w.filter(x=>x.g==="r").reduce((a,b)=>a+b.v,0);
+  const clicksArr=w.map(x=>Math.round((x.g==="t"?x.v/sumT*0.70:x.v/sumR*0.30)*TOTAL)).sort((a,b)=>b-a);
+  // 2. publisher stubs — quality assigned independently of volume (premium types skew higher quality)
+  const stubs=[];
+  for(let k=0;k<N;k++){
+    const premium=rng()<0.45;
+    const pool=premium?cfg.premium:cfg.broad;
+    const type=pool[Math.floor(rng()*pool.length)];
+    const q=Math.round(premium?55+rng()*37:28+rng()*47);
+    const geo=rng()<0.7?"US":"Global";
+    const pAbove=q<55?0.6:q<75?0.3:0.1;
+    const comp=rng()<pAbove?"above":(rng()<0.5?"even":"below");
+    const contact=CONTACT_FIRST[Math.floor(rng()*CONTACT_FIRST.length)]+" "+CONTACT_LAST[Math.floor(rng()*CONTACT_LAST.length)];
+    const joinedMonthsAgo=Math.floor(rng()*50)+2;
+    stubs.push({type,ch:chanOf(type),q,geo,comp,contact,joinedMonthsAgo,_r:rng()});
+  }
+  // 3. assign clicks independently of quality (shuffle), so both high-vol/low-q and low-vol/high-q exist
+  [...stubs].sort((a,b)=>a._r-b._r).forEach((s,k)=>s.clicks=clicksArr[k]);
+  // 4. derived fields
+  const asc=[...stubs].sort((a,b)=>a.clicks-b.clicks);
+  asc.forEach((s,i)=>s.scale=Math.round(i/(N-1)*100));
+  stubs.forEach(s=>{
+    s.cvr=+clamp(0.8+s.q*0.035+(rng()-0.5)*0.8,0.5,6).toFixed(1);      // funded rate % (click -> funded account)
+    s.cpa=Math.round(clamp(85+(s.q/100)*55+(rng()-0.5)*24,60,175));    // $ paid per funded account
+    s.rev1yr=Math.round(clamp(160+Math.pow(s.q/100,1.4)*740+(rng()-0.5)*90,180,860)); // 1st-yr revenue per funded account (scales with funding quality)
+    s.epc=+(s.cpa*(s.cvr/100)).toFixed(2);                             // publisher earns per click = CPA x funded rate
+    s.aud=Math.max(20,Math.round(s.clicks/1000*(0.8+rng()*1.4)));
+    s.composite=0.5*(s.scale/100)+0.5*(s.q/100);
+  });
+  // 5. tier by composite (top = strong on both; mid = strong on one; tail = weak on both)
+  [...stubs].sort((a,b)=>b.composite-a.composite).forEach((s,i)=>s.tier=i<TOP?"top":i<TOP+MID?"mid":"tail");
+  // 6. names
+  const used=new Set(), combos=cfg.pre.length*cfg.suf.length;
+  const name=()=>{let t;do{t=cfg.pre[Math.floor(rng()*cfg.pre.length)]+cfg.suf[Math.floor(rng()*cfg.suf.length)];}while(used.has(t)&&used.size<combos);if(used.has(t))t+=Math.floor(rng()*900+10);used.add(t);return t;};
+  return stubs.map(s=>({n:name(),type:s.type,ch:s.ch,tier:s.tier,clicks:s.clicks,cvr:s.cvr,q:s.q,epc:s.epc,cpa:s.cpa,rev1yr:s.rev1yr,aud:s.aud,geo:s.geo,comp:s.comp,contact:s.contact,joinedMonthsAgo:s.joinedMonthsAgo}));
+}
+
+let skin="fin", focusN=20;
+let SCORED={};
+const CACHE={};
+const getPubs=s=>CACHE[s]||(CACHE[s]=genPortfolio(s));
+const engagement={};
+const $=s=>document.querySelector(s);
+const median=a=>{const s=[...a].sort((x,y)=>x-y);const m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2;};
+const mode=a=>{const c={};let best=a[0],bc=0;a.forEach(v=>{c[v]=(c[v]||0)+1;if(c[v]>bc){bc=c[v];best=v;}});return best;};
+const money=n=>"$"+Math.round(n).toLocaleString();
+const moneyM=n=> n>=1e6?"$"+(n/1e6).toFixed(1)+"M": n>=1000?"$"+Math.round(n/1000)+"k":"$"+Math.round(n);
+
+function compute(){
+  const pubs=getPubs(skin);
+  const N=pubs.length;
+  // percentile scale (relative volume standing)
+  const order=[...pubs].sort((a,b)=>a.clicks-b.clicks);
+  order.forEach((p,i)=>p.scale=Math.round(i/(N-1)*100));
+  const tops=pubs.filter(p=>p.tier==="top");
+  const fp={
+    channel:mode(tops.map(t=>t.ch)),channels:[...new Set(tops.map(t=>t.ch))],
+    types:[...new Set(tops.map(t=>t.type))],
+    audMed:median(tops.map(t=>t.aud)),qMed:median(tops.map(t=>t.q)),
+    cvrMed:median(tops.map(t=>t.cvr)),epcMed:median(tops.map(t=>t.epc))
+  };
+  const topGeos=[...new Set(tops.map(t=>t.geo))];
+  const mids=pubs.filter(p=>p.tier==="mid").map(p=>{
+    // fit = structural lookalike to top-tier (channel, type, geo) — no quality/scale bonus baked in
+    const chMatch=fp.channels.includes(p.ch)?100:45;
+    const tyMatch=fp.types.includes(p.type)?100:50;
+    const geoMatch=topGeos.includes(p.geo)?100:65;
+    const fit=Math.round(0.45*chMatch+0.35*tyMatch+0.20*geoMatch);
+    // potential = strength on their best axis (scale OR quality, weighted evenly), plus a balance boost,
+    // with a floor: genuinely junk quality can't be promoted no matter how big.
+    const qStr=p.q/100, sStr=p.scale/100, qRoom=(100-p.q)/100, sRoom=(100-p.scale)/100;
+    // two balanced promotion paths, each rewards the strong axis + room on the other, calibrated to score evenly
+    const volumeScore=qStr*(0.72+0.30*sRoom);   // strong quality, room to scale -> grow volume
+    const qualityScore=sStr*(0.68+0.30*qRoom);  // strong scale, room on quality -> lift quality
+    const primary=Math.max(volumeScore,qualityScore)*100;
+    const balance=Math.min(qStr,sStr)*100;    // reward for a real floor on the weak axis
+    const qFloor=p.q>=45?1:p.q/45;            // "some quality has to be there" — dampen junk
+    const opp = qualityScore>=volumeScore ? "quality" : "volume";
+    const rawbase=(0.35*fit+0.55*primary+0.10*balance)*qFloor;
+    // stretch around a high pivot so genuine standouts reach the 90s without inflating the whole board (order preserved)
+    const base=clamp(Math.round(74+(rawbase-74)*1.6),1,100);
+    const eng=engagement[p.n]||"neutral";
+    const mod=eng==="engaged"?0.07:eng==="unresponsive"?-0.07:0;
+    const score=clamp(Math.round(base*(1+mod)),1,100);
+    return {...p,fit,primary,balance,opp,base,eng,mod,score};
+  }).sort((a,b)=>b.score-a.score);
+
+  SCORED={}; mids.forEach(m=>SCORED[m.n]=m);
+  renderLeaderboard(mids.slice(0,focusN));
+  renderQuadrant(pubs);
+  renderFingerprint(fp);
+  renderRoll(pubs,mids);
+}
+
+function leversFor(p){
+  const L=[];
+  if(p.opp==="volume"){
+    L.push({t:"Exclusive signup bonus to their audience",e:"Med"});
+    L.push({t:"Temporary CPA lift to earn share",e:"Low",margin:true});
+    L.push({t:"Co-marketing: email drop / social push",e:"High"});
+  } else {
+    L.push({t:"Sub-ID optimization — cut sources that don't fund or retain",e:"Med"});
+    L.push({t:"Swap to a higher-funding-rate funnel",e:"Med"});
+    L.push({t:"Roll a winning creative to them",e:"Low"});
+    L.push({t:"Re-price by source quality (fund + retention)",e:"Low"});
+  }
+  if(p.comp==="above") L.push({t:"Relationship push — win placement over competitors",e:"Med",rel:true});
+  return L.slice(0,4);
+}
+
+function renderLeaderboard(mids){
+  let h="";
+  mids.forEach((p,i)=>{
+    const levers=leversFor(p).map(l=>{
+      const cls=l.margin?" margin":l.rel?" rel":"";
+      const ec=l.e==="Low"?"lo":l.e==="High"?"hi":"";
+      return `<span class="lever${cls}">${l.t}<span class="eff ${ec}">${l.e}${l.margin?" · margin":""}</span></span>`;
+    }).join("");
+    const adj=p.mod>0?`<div class="score-adj">base ${p.base} <span class="up">→ +7% engaged</span></div>`
+      :p.mod<0?`<div class="score-adj">base ${p.base} <span class="down">→ −7%</span></div>`
+      :`<div class="score-adj">base ${p.base}</div>`;
+    const oppTxt=p.opp==="volume"?"Grow volume":"Lift quality";
+    const why=p.opp==="volume"
+      ? `<b>Strong funding quality, room to scale.</b> Funds like your top tier (${p.fit}% profile match) but under-delivering volume — the lever is helping them grow reach.`
+      : `<b>Strong scale, room on quality.</b> Big volume (${p.fit}% profile match) funding below your bar — the lever is optimizing the accounts that volume delivers.`;
+    h+=`<div class="lb-row" data-n="${p.n}">
+      <div class="rank ${i<3?'top3':''}">${i+1}</div>
+      <div>
+        <div class="pub-name">${p.n}<span class="opp ${p.opp}">${oppTxt}</span><span class="view">view profile →</span></div>
+        <div class="pub-meta">${p.type} · ${p.ch} · ${p.clicks.toLocaleString()} clicks/mo · ${p.cvr}% funded rate · ${money(p.epc)} EPC</div>
+        <div class="why">${why}</div>
+        <div class="levers">${levers}</div>
+      </div>
+      <div class="score-box">
+        <div class="score-num ${p.score<80?'mid':''}">${p.score}</div>
+        <div class="score-cap">promotion score</div>
+        ${adj}
+        <select class="eng" data-n="${p.n}">
+          <option value="engaged"${p.eng==="engaged"?" selected":""}>Engaged</option>
+          <option value="neutral"${p.eng==="neutral"?" selected":""}>Neutral</option>
+          <option value="unresponsive"${p.eng==="unresponsive"?" selected":""}>Unresponsive</option>
+        </select>
+      </div>
+    </div>`;
+  });
+  $("#leaderboard").innerHTML=h;
+  document.querySelectorAll(".eng").forEach(s=>s.onchange=()=>{engagement[s.dataset.n]=s.value;compute();});
+  document.querySelectorAll(".lb-row").forEach(r=>r.onclick=e=>{
+    if(e.target.closest(".score-box")) return; // don't open when using the engagement dropdown
+    openProfile(r.dataset.n);
+  });
+}
+
+function renderQuadrant(pubs){
+  const W=440,H=340,pad=34;
+  const x=v=>pad+(v/100)*(W-pad*2);
+  const y=v=>H-pad-(v/100)*(H-pad*2);
+  const col={top:"#45C4B0",mid:"#E0A23C",tail:"#5c6b75"};
+  let dots="";
+  // draw tail first, then mid, then top so important points sit on top
+  ["tail","mid","top"].forEach(t=>{
+    pubs.filter(p=>p.tier===t).forEach(p=>{
+      const r=t==="top"?6:t==="mid"?4:2.4;
+      const op=t==="tail"?0.5:0.85;
+      dots+=`<circle cx="${x(p.scale).toFixed(1)}" cy="${y(p.q).toFixed(1)}" r="${r}" fill="${col[t]}" fill-opacity="${op}" stroke="#0E1A24" stroke-width="1"><title>${p.n} — quality ${p.q}, scale ${p.scale}</title></circle>`;
+    });
+  });
+  $("#quadrant").innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Quality by scale scatter">
+    <line x1="${pad}" y1="${H/2}" x2="${W-pad}" y2="${H/2}" stroke="#273D4A" stroke-dasharray="3 4"/>
+    <line x1="${W/2}" y1="${pad}" x2="${W/2}" y2="${H-pad}" stroke="#273D4A" stroke-dasharray="3 4"/>
+    <text x="${W/2}" y="${H-8}" fill="#8AA0AD" font-size="11" text-anchor="middle" font-family="IBM Plex Mono">Scale (volume percentile) →</text>
+    <text x="14" y="${H/2}" fill="#8AA0AD" font-size="11" text-anchor="middle" font-family="IBM Plex Mono" transform="rotate(-90 14 ${H/2})">Funding quality →</text>
+    ${dots}</svg>`;
+}
+
+function renderFingerprint(fp){
+  const cells=[
+    ["Dominant channel",fp.channel],
+    ["Publisher types",fp.types.join(", ")],
+    ["Median audience",Math.round(fp.audMed).toLocaleString()+"k visits/mo"],
+    ["Median funding quality",fp.qMed+" / 100"],
+    ["Median funded rate",fp.cvrMed+"%"],
+    ["Median EPC",money(fp.epcMed)]
+  ];
+  $("#fingerprint").innerHTML=cells.map(c=>`<div class="fp"><div class="k">${c[0]}</div><div class="v">${c[1]}</div></div>`).join("");
+}
+
+function renderRoll(pubs,mids){
+  const fundedMo=p=>p.clicks*(p.cvr/100);
+  const revByTier=t=>pubs.filter(p=>p.tier===t).reduce((s,p)=>s+fundedMo(p)*p.rev1yr,0);
+  const totalRev=pubs.reduce((s,p)=>s+fundedMo(p)*p.rev1yr,0);       // 1st-year revenue generated
+  const totalCost=pubs.reduce((s,p)=>s+fundedMo(p)*p.cpa,0);          // CPA paid
+  const blendedROI=(totalRev/totalCost).toFixed(1);
+  const counts={top:pubs.filter(p=>p.tier==="top").length,mid:pubs.filter(p=>p.tier==="mid").length,tail:pubs.filter(p=>p.tier==="tail").length};
+  const cand=mids.filter(m=>m.score>=80).length;
+  const byClicks=[...pubs].sort((a,b)=>b.clicks-a.clicks);
+  const totalClicks=pubs.reduce((s,p)=>s+p.clicks,0);
+  const conc=Math.round(byClicks.slice(0,25).reduce((s,p)=>s+p.clicks,0)/totalClicks*100);
+  $("#roll").innerHTML=`
+    <div class="stat"><div class="n">${pubs.length}</div><div class="l">Publishers</div></div>
+    <div class="stat"><div class="n">${cand}</div><div class="l">Promotion candidates (80+)</div></div>
+    <div class="stat"><div class="n">${blendedROI}x</div><div class="l">Blended 1st-yr ROI*</div></div>
+    <div class="stat"><div class="n">${conc}%</div><div class="l">Volume from top 25</div></div>`;
+  const cols={top:"#45C4B0",mid:"#E0A23C",tail:"#5c6b75"};
+  let bars="";
+  ["top","mid","tail"].forEach(t=>{
+    const pct=Math.round(revByTier(t)/totalRev*100);
+    bars+=`<div class="barrow"><div class="lab">${t} (${counts[t]})</div><div class="track"><div class="fill" style="width:${pct}%;background:${cols[t]}"></div></div><div style="font-family:var(--mono);font-size:11.5px;color:var(--muted);width:38px;text-align:right">${pct}%</div></div>`;
+  });
+  $("#tierbars").innerHTML=`<div style="font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 6px">1st-year revenue share by tier*</div>`+bars;
+  $("#concentration").innerHTML=`Your top 25 publishers drive <b style="color:var(--ink)">${conc}%</b> of clicks — a concentrated head over a long tail of ${counts.mid+counts.tail}. The leaderboard pulls the <b style="color:var(--ink)">${focusN}</b> mid-tier accounts most likely to move up. <span style="color:var(--muted)">*1st-year revenue = funded accounts × 1st-year revenue per account; ROI = revenue ÷ CPA paid. Volume-activation levers trade ROI for scale, offset by the quality plays that lift ROI on high-volume accounts.</span>`;
+}
+
+function openProfile(nm){
+  const p=SCORED[nm]; if(!p) return;
+  const M=6; // YTD months (demo, Jan–Jun)
+  const clicksYTD=p.clicks*M, fundedYTD=Math.round(p.clicks*(p.cvr/100)*M);
+  const revGenYTD=fundedYTD*p.rev1yr, costYTD=fundedYTD*p.cpa;
+  const roi=(p.rev1yr/p.cpa).toFixed(1);
+  const slug=nm.toLowerCase().replace(/[^a-z0-9]/g,"");
+  const site="https://www."+slug+".com";
+  const parts=p.contact.split(" ");
+  const email=(parts[0]+"."+(parts[1]||"")).toLowerCase()+"@"+slug+".com";
+  const d=new Date(); d.setMonth(d.getMonth()-p.joinedMonthsAgo);
+  const joined=d.toLocaleString("en-US",{month:"short",year:"numeric"});
+  const yrs=Math.floor(p.joinedMonthsAgo/12), rem=p.joinedMonthsAgo%12;
+  const inProg=yrs>0?`${yrs}y ${rem}m`:`${rem}m`;
+  const trafficMap={"Content/SEO":"Organic search / content","Email":"Email / newsletter","Social":"Social / creator","App":"In-app / owned audience"};
+  const oppTxt=p.opp==="volume"?"Grow volume":"Lift quality";
+  const strongAxis=p.opp==="volume"?`Funding quality ${p.q}/100 (strong), scale ${p.scale}/100 (room)`:`Scale ${p.scale}/100 (strong), funding quality ${p.q}/100 (room)`;
+  const planWhy=p.opp==="volume"
+    ? "Funds like your top tier but under-scaled. The play is to help them grow reach without giving up your ROI target."
+    : "Big volume funding below your bar. The play is to optimize the accounts that volume delivers — dig into source-level funding and retention.";
+  const levers=leversFor(p).map(l=>{
+    const cls=l.margin?" margin":l.rel?" rel":""; const ec=l.e==="Low"?"lo":l.e==="High"?"hi":"";
+    return `<span class="lever${cls}">${l.t}<span class="eff ${ec}">${l.e}${l.margin?" · ROI":""}</span></span>`;
+  }).join("");
+  const card=`
+    <div class="modal-head">
+      <div>
+        <div class="modal-title"><a href="${site}" target="_blank" rel="noopener">${p.n}</a></div>
+        <div class="modal-sub">${p.type} · ${p.ch} · ${p.geo}<span class="opp ${p.opp}" style="margin-left:8px">${oppTxt}</span></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div class="modal-score"><div class="n ${p.score<80?'mid':''}">${p.score}</div><div class="c">promotion score</div></div>
+        <button class="modal-x" onclick="closeProfile()">✕</button>
+      </div>
+    </div>
+    <div class="msec" style="border-top:none;padding-top:6px">
+      <h4>Performance — year to date</h4>
+      <div class="mstats">
+        <div class="mstat"><div class="v">${fundedYTD.toLocaleString()}</div><div class="k">Funded accounts YTD</div></div>
+        <div class="mstat"><div class="v">${clicksYTD.toLocaleString()}</div><div class="k">Clicks YTD</div></div>
+        <div class="mstat"><div class="v">${p.cvr}%</div><div class="k">Funded rate</div></div>
+        <div class="mstat"><div class="v">${money(revGenYTD)}</div><div class="k">1st-yr revenue YTD</div></div>
+        <div class="mstat"><div class="v">${money(costYTD)}</div><div class="k">CPA cost YTD</div></div>
+        <div class="mstat"><div class="v">${money(p.epc)}</div><div class="k">Publisher EPC</div></div>
+      </div>
+    </div>
+    <div class="msec">
+      <h4>Unit economics</h4>
+      <div class="mstats">
+        <div class="mstat"><div class="v">${money(p.cpa)}</div><div class="k">CPA / funded account</div></div>
+        <div class="mstat"><div class="v">${money(p.rev1yr)}</div><div class="k">1st-yr revenue / account</div></div>
+        <div class="mstat"><div class="v" style="color:var(--signal)">${roi}x</div><div class="k">1st-year ROI</div></div>
+      </div>
+    </div>
+    <div class="msec">
+      <h4>Publisher characteristics</h4>
+      <div class="mrow"><span class="k">Publisher type</span><span class="val">${p.type}</span></div>
+      <div class="mrow"><span class="k">Primary traffic</span><span class="val">${trafficMap[p.ch]||p.ch}</span></div>
+      <div class="mrow"><span class="k">Audience (SimilarWeb)</span><span class="val">${p.aud.toLocaleString()}k visits/mo</span></div>
+      <div class="mrow"><span class="k">Geography</span><span class="val">${p.geo}</span></div>
+      <div class="mrow"><span class="k">In program since</span><span class="val">${joined} · ${inProg}</span></div>
+      <div class="mrow"><span class="k">Website</span><span class="val"><a href="${site}" target="_blank" rel="noopener">${site.replace("https://","")}</a></span></div>
+      <div class="mrow"><span class="k">Our contact</span><span class="val">${p.contact} · <a href="mailto:${email}">${email}</a></span></div>
+    </div>
+    <div class="msec">
+      <h4>Why it scored ${p.score}</h4>
+      <div class="whybar">
+        <div class="whypill"><div class="v">${p.fit}%</div><div class="k">Profile fit</div></div>
+        <div class="whypill"><div class="v">${Math.round(p.primary)}</div><div class="k">Potential</div></div>
+        <div class="whypill"><div class="v">${p.base}</div><div class="k">Base (pre-engagement)</div></div>
+      </div>
+      <p class="note" style="margin:0">${strongAxis}. ${p.mod!==0?`Adjusted ${p.mod>0?'+7% (engaged)':'−7% (unresponsive)'} to ${p.score}.`:''}</p>
+    </div>
+    <div class="msec">
+      <h4>The plan — ${oppTxt}</h4>
+      <p class="note" style="margin:0 0 10px">${planWhy}</p>
+      <div class="levers">${levers}</div>
+    </div>`;
+  $("#modalCard").innerHTML=card;
+  $("#modal").style.display="flex";
+}
+function closeProfile(){ $("#modal").style.display="none"; }
+$("#modal").onclick=e=>{ if(e.target.id==="modal") closeProfile(); };
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeProfile(); });
+
+document.querySelectorAll("#focusToggle button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#focusToggle button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); focusN=+b.dataset.n; compute();
+});
+compute();
+</script>
+</body>
+</html>
